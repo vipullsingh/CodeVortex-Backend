@@ -45,14 +45,14 @@ UserRoute.post("/register", async (req, res) => {
 UserRoute.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email,password)
+    // console.log(email,password)
     const isUserExist = await User.findOne({ email });
     if (!isUserExist) {
       return res.status(401).send({ msg: "invalid username or password" });
     }
 
     var result = bcrypt.compareSync(password, isUserExist.password);
-    // console.log(result);
+    console.log(result);
     if (!result) {
       return res.status(401).send({ msg: "invalid username or password" });
     }
