@@ -61,7 +61,7 @@ UserRoute.post("/login", async (req, res) => {
     // Generate a JWT token
     const token = jwt.sign({ userId: user._id }, process.env.secretkey, { expiresIn: '1h' });
 
-    res.status(200).json({ message: 'Login successful', token });
+    res.status(200).json({ message: 'Login successful', user, token });
   } catch (error) {
     console.error('Error logging in:', error);
     res.status(500).json({ error: 'Server error' });
