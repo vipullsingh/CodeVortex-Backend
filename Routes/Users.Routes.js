@@ -5,31 +5,40 @@ const jwt = require("jsonwebtoken");
 const { verify } = require("../middleware/jwtAuth.middleware");
 const UserRoute = require("express").Router();
 require("dotenv").config();
+const { validationResult } = require('express-validator');
+const User = require('../Models/user.model');
 
 UserRoute.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const isUserExist = await UserModel.findOne({ email });
-    // console.log(isUserExist);
+    const errors = validationResult(req);
 
-    console.log(isUserExist);
-    if (isUserExist) {
-      return res.send({
-        msg: "user already exist in the database try with new email",
-      });
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    const hash = bcrypt.hashSync(password, 8);
-    // console.log(hash);
-    const user = new UserModel({ name, email, password: hash });
-    // console.log(user);
-    await user.save();
+    const { name, email, password } = req.body;
 
-    res.send({ msg: "user has been registered successfully" });
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const newUser = new User({ name, email, password: hashedPassword });
+    await newUser.save();
+
+    res.status(201).json({ message: 'Signup successful' });
   } catch (error) {
-    res.send({ msg: error.msg });
+    console.error('Error signing up:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
+
+
 UserRoute.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
