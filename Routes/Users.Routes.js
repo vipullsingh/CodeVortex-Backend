@@ -1,9 +1,9 @@
 const { Blacklist } = require("../Models/blacklist.model");
-const { UserModel } = require("../Models/user.model");
 const bcrypt = require("bcrypt");
 const express = require('express');
 const app = express();
 app.use(express.json());
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { verify } = require("../middleware/jwtAuth.middleware");
 const UserRoute = require("express").Router();
