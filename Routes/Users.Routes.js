@@ -43,26 +43,27 @@ UserRoute.post("/register", async (req, res) => {
 
 
 UserRoute.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { email, password } = req.body;
-
+    // Check if user exists
     const user = await User.findOne({ email });
-
     if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid email or password" });
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const accessToken = jwt.sign({ userID: user._id }, process.env.secretKey);
+    // Generate a JWT token
+    const token = jwt.sign({ userId: user._id }, process.env.secretkey, { expiresIn: '1h' });
 
-    res.json({ message: "Login successful", user, accessToken });
+    res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
-    console.error('Error during login:', error);
+    console.error('Error logging in:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
