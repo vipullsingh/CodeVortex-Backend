@@ -45,29 +45,31 @@ UserRoute.post("/register", async (req, res) => {
 UserRoute.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    // console.log(email,password)
-    const isUserExist = await User.findOne({ email });
-    if (!isUserExist) {
-      return res.status(401).send({ msg: "invalid username or password" });
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    var result = bcrypt.compareSync(password, isUserExist.password);
-    console.log(result);
-    if (!result) {
-      return res.status(401).send({ msg: "invalid username or password" });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const Accesstoken = jwt.sign(
-      { userID: isUserExist._id },
-      process.env.secretKey
-    );
-    console.log(Accesstoken);
+    const accessToken = jwt.sign({ userID: user._id }, process.env.secretKey);
 
-    res.send({ msg: "login successfull", user: isUserExist, Accesstoken });
+    res.json({ message: "Login successful", user, accessToken });
   } catch (error) {
-    res.send({ msg: error.msg });
+    console.error('Error during login:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
+
+
+
+
 UserRoute.get("/logout", async (req, res) => {
   // we wil get the accesstoken and refreshtoken in req.headers with the respective name;
   try {
