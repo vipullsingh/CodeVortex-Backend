@@ -1,6 +1,9 @@
 const { Blacklist } = require("../Models/blacklist.model");
 const { UserModel } = require("../Models/user.model");
 const bcrypt = require("bcrypt");
+const express = require('express');
+const app = express();
+app.use(express.json());
 const jwt = require("jsonwebtoken");
 const { verify } = require("../middleware/jwtAuth.middleware");
 const UserRoute = require("express").Router();
@@ -42,8 +45,8 @@ UserRoute.post("/register", async (req, res) => {
 UserRoute.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const isUserExist = await UserModel.findOne({ email });
-
+    // console.log(email,password)
+    const isUserExist = await User.findOne({ email });
     if (!isUserExist) {
       return res.status(401).send({ msg: "invalid username or password" });
     }
@@ -58,7 +61,7 @@ UserRoute.post("/login", async (req, res) => {
       { userID: isUserExist._id },
       process.env.secretKey
     );
-    console.log(Accesstoken);
+    // console.log(Accesstoken);
 
     res.send({ msg: "login successfull", user: isUserExist, Accesstoken });
   } catch (error) {
